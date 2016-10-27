@@ -6,10 +6,18 @@
  */
 exports.isStar = true;
 
-var PRIORITY = [undefined, 'select'];
+var PRIORITY = [undefined, 'select', 'limit', 'format'];
 
-function functionByNameComparer(a, b) {
+function compareFunctions(a, b) {
     return PRIORITY.indexOf(a.name) - PRIORITY.indexOf(b.name);
+}
+
+function getObjectWithFields(object, fields) {
+    return fields.reduce(function (acc, value) {
+        acc[value] = object[value];
+
+        return acc;
+    }, {});
 }
 
 /**
@@ -24,7 +32,7 @@ exports.query = function (collection) {
     });
 
     return [].slice.call(arguments, 1)
-        .sort(functionByNameComparer)
+        .sort(compareFunctions)
         .reduce(function (acc, func) {
             return func(acc, collection);
         }, copy);
@@ -39,12 +47,12 @@ exports.select = function () {
     var strings = [].slice.call(arguments);
 
     return function select(collection) {
-        return collection.map(function (element) {
-            return strings.reduce(function (acc, value) {
-                acc[value] = element[value];
+        var existingFields = strings.filter(function (string) {
+            return Boolean(collection[0][string]);
+        });
 
-                return acc;
-            }, {});
+        return collection.map(function (element) {
+            return getObjectWithFields(element, existingFields);
         });
     };
 };
@@ -88,11 +96,12 @@ exports.sortBy = function (property, order) {
  * @returns {Function}
  */
 exports.format = function (property, formatter) {
-    return function (collection) {
+    return function format(collection) {
         return collection.map(function (element) {
-            element[property] = formatter(element[property]);
+            var elementCopy = getObjectWithFields(element, Object.keys(element));
+            elementCopy[property] = formatter(element[property]);
 
-            return element;
+            return elementCopy;
         });
     };
 };
@@ -103,7 +112,7 @@ exports.format = function (property, formatter) {
  * @returns {Function}
  */
 exports.limit = function (count) {
-    return function (collection) {
+    return function limit(collection) {
         return collection.slice(0, count);
     };
 };
