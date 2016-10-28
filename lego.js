@@ -129,9 +129,7 @@ if (exports.isStar) {
         return function (collection) {
             return collection.filter(function (element) {
                 return filterFunctions.some(function (filter) {
-                    return filter(collection).some(function (filtered) {
-                        return filtered === element;
-                    });
+                    return filter(collection).indexOf(element) !== -1;
                 });
             });
         };
@@ -149,9 +147,7 @@ if (exports.isStar) {
         return function (collection) {
             return collection.filter(function (element) {
                 return filterFunctions.every(function (filter) {
-                    return filter(collection).some(function (filtered) {
-                        return filtered === element;
-                    });
+                    return filter(collection).indexOf(element) !== -1;
                 });
             });
         };
