@@ -42,10 +42,10 @@ exports.query = function (collection) {
  * @returns {Function}
  */
 exports.select = function () {
-    var strings = [].slice.call(arguments);
+    var fields = [].slice.call(arguments);
 
     return function select(collection) {
-        var existingFields = strings.filter(function (string) {
+        var existingFields = fields.filter(function (string) {
             return Boolean(collection[0][string]);
         });
 
@@ -124,12 +124,12 @@ if (exports.isStar) {
      * @returns {Function}
      */
     exports.or = function () {
-        var functions = [].slice.call(arguments);
+        var filterFunctions = [].slice.call(arguments);
 
         return function (collection) {
             return collection.filter(function (element) {
-                return functions.some(function (func) {
-                    return func(collection).some(function (filtered) {
+                return filterFunctions.some(function (filter) {
+                    return filter(collection).some(function (filtered) {
                         return filtered === element;
                     });
                 });
@@ -144,12 +144,12 @@ if (exports.isStar) {
      * @returns {Function}
      */
     exports.and = function () {
-        var functions = [].slice.call(arguments);
+        var filterFunctions = [].slice.call(arguments);
 
         return function (collection) {
             return collection.filter(function (element) {
-                return functions.every(function (func) {
-                    return func(collection).some(function (filtered) {
+                return filterFunctions.every(function (filter) {
+                    return filter(collection).some(function (filtered) {
                         return filtered === element;
                     });
                 });
