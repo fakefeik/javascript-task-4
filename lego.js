@@ -8,10 +8,6 @@ exports.isStar = true;
 
 var PRIORITY = [undefined, 'select', 'limit', 'format'];
 
-function compareFunctions(a, b) {
-    return PRIORITY.indexOf(a.name) - PRIORITY.indexOf(b.name);
-}
-
 function getObjectWithFields(object, fields) {
     return fields.reduce(function (acc, value) {
         acc[value] = object[value];
@@ -32,7 +28,9 @@ exports.query = function (collection) {
     });
 
     return [].slice.call(arguments, 1)
-        .sort(compareFunctions)
+        .sort(function (a, b) {
+            return PRIORITY.indexOf(a.name) - PRIORITY.indexOf(b.name);
+        })
         .reduce(function (acc, func) {
             return func(acc, collection);
         }, copy);
@@ -132,7 +130,7 @@ if (exports.isStar) {
             return collection.filter(function (element) {
                 return functions.some(function (func) {
                     return func(collection).some(function (filtered) {
-                        return JSON.stringify(filtered) === JSON.stringify(element);
+                        return filtered === element;
                     });
                 });
             });
@@ -152,7 +150,7 @@ if (exports.isStar) {
             return collection.filter(function (element) {
                 return functions.every(function (func) {
                     return func(collection).some(function (filtered) {
-                        return JSON.stringify(filtered) === JSON.stringify(element);
+                        return filtered === element;
                     });
                 });
             });
