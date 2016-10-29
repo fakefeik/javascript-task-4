@@ -8,14 +8,6 @@ exports.isStar = true;
 
 var PRIORITY = [undefined, 'select', 'limit', 'format'];
 
-function getObjectWithFields(object, fields) {
-    return fields.reduce(function (acc, value) {
-        acc[value] = object[value];
-
-        return acc;
-    }, {});
-}
-
 /**
  * Запрос к коллекции
  * @param {Array} collection
@@ -45,12 +37,16 @@ exports.select = function () {
     var fields = [].slice.call(arguments);
 
     return function select(collection) {
-        var existingFields = fields.filter(function (string) {
-            return Boolean(collection[0][string]);
+        var existingFields = fields.filter(function (field) {
+            return collection[0][field] !== undefined;
         });
 
         return collection.map(function (element) {
-            return getObjectWithFields(element, existingFields);
+            return existingFields.reduce(function (acc, value) {
+                acc[value] = element[value];
+
+                return acc;
+            }, {});
         });
     };
 };
@@ -96,7 +92,7 @@ exports.sortBy = function (property, order) {
 exports.format = function (property, formatter) {
     return function format(collection) {
         return collection.map(function (element) {
-            var elementCopy = getObjectWithFields(element, Object.keys(element));
+            var elementCopy = Object.assign({}, element);
             elementCopy[property] = formatter(element[property]);
 
             return elementCopy;
