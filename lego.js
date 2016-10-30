@@ -6,7 +6,7 @@
  */
 exports.isStar = true;
 
-var PRIORITY = [undefined, 'select', 'limit', 'format'];
+var PRIORITY = ['filterIn', undefined, 'select', 'limit', 'format'];
 
 /**
  * Запрос к коллекции
@@ -37,13 +37,11 @@ exports.select = function () {
     var fields = [].slice.call(arguments);
 
     return function select(collection) {
-        var existingFields = fields.filter(function (field) {
-            return collection[0][field] !== undefined;
-        });
-
         return collection.map(function (element) {
-            return existingFields.reduce(function (acc, value) {
-                acc[value] = element[value];
+            return fields.reduce(function (acc, field) {
+                if (element.hasOwnProperty(field)) {
+                    acc[field] = element[field];
+                }
 
                 return acc;
             }, {});
@@ -58,7 +56,7 @@ exports.select = function () {
  * @returns {Function}
  */
 exports.filterIn = function (property, values) {
-    return function (collection) {
+    return function filterIn(collection) {
         return collection.filter(function (element) {
             return values.indexOf(element[property]) !== -1;
         });
